@@ -1,19 +1,16 @@
 # ESP32CAM-Robot
 
-Esp32 controlling tracked vehicle while streaming video.
-Serial console tells you where to connect. And use your own wifi credentials, not mine.
+Esp32 controlling tracked vehicle while streaming video, tilt servo and flashlight.
+Serial console tells you where to connect. 
+The uncompressed html code is included. It also contain a Button variante.
 
-Wiring:
-![esp32cam.jpg](esp32cam.jpg "Wiring")
-For the $2 motor dirver search "L298N Motor Driver".
+Flashing:
+![flashing.jpg](flashing.jpg "Wiring")
 
-Control:
-![DSC02367.jpg](DSC02367.jpg "Control")
+Screenshot iPhone:
+![screenshot.jpg](screenshot.jpg "Control")
 
 Build:
-![DSC02365.jpg](DSC02365.jpg "Build")
-ESP-Cam, motor driver, 5V switching regulator.
-
-Extern antenna:
-![DSC02372.jpg](DSC02372.jpg "extant")
+![robot.jpg](robot.jpg "Build")
+ESP-Cam, motor driver, servo, Zumo Chassis.
 
