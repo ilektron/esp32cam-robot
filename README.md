@@ -9,7 +9,7 @@ Build:
 ESP-Cam, motor driver, servo, Zumo Chassis.
 
 Flashing:
-<img src="flashing.jpg" max-width="400px">
+<img src="flashing.jpg" width="400px">
 
 
 Screenshot iPhone:
