@@ -4,15 +4,14 @@ Esp32 controlling tracked vehicle while streaming video, tilt servo and flashlig
 Serial console tells you where to connect. 
 The uncompressed html code is included. It also contain a Button variante.
 
-Build:
-![robot.jpg](robot.jpg "Build")
-ESP-Cam, motor driver, servo, Zumo Chassis.
+<p>ESP-Cam, motor driver, servo, Zumo Chassis.</p>
+<img src="robot.jpg" width="500px">
 
-Flashing:
-<img src="flashing.jpg" width="400px">
+<p>Flashing:</p>
+<img src="flashing.jpg" width="500px">
 
 
-Screenshot iPhone:
-![screenshot.jpg](screenshot.jpg "Control")
+<p>Screenshot iPhone:</p>
+<img src="screenshot.jpg" width="500px">
 
 
