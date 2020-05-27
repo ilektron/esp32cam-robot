@@ -1,9 +1,12 @@
 /*
 ESP32-CAM Remote Control 
+https://github.com/PepeTheFroggie/ESP32CAM_RCTANK
+https://www.esp32.com/viewtopic.php?f=19&t=11337
+
 */
 
-const char* ssid = "FSM";
-const char* password = "0101010101";
+const char* ssid = "";
+const char* password = "";
 
 #include "esp_wifi.h"
 #include "esp_camera.h"
@@ -158,8 +161,8 @@ void setup()
   //drop down frame size for higher initial frame rate
   sensor_t * s = esp_camera_sensor_get();
   s->set_framesize(s, FRAMESIZE_QVGA);
-  s->set_vflip(s, 1);
-  s->set_hmirror(s, 1);
+  //s->set_vflip(s, 0);
+  //s->set_hmirror(s, 1);
 
   // Remote Control Car
   initMotors();

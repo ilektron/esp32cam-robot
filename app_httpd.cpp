@@ -1,7 +1,11 @@
 
 #include <esp32-hal-ledc.h>
-int speed = 255;  
+int speed = 108;  
 int noStop = 0;
+
+int cspeed = 200;
+int xcoord = 0;
+float speed_Coeff = (1 + (xcoord / 50.0));
 
 
 #include "esp_http_server.h"
@@ -10,7 +14,7 @@ int noStop = 0;
 #include "img_converters.h"
 #include "Arduino.h"
 
-#include "dl_lib.h"
+//#include "dl_lib.h"
 
 typedef struct {
         httpd_req_t *req;
@@ -72,39 +76,14 @@ static esp_err_t capture_handler(httpd_req_t *req){
         return res;
     }
 
-    dl_matrix3du_t *image_matrix = dl_matrix3du_alloc(1, fb->width, fb->height, 3);
-    if (!image_matrix) {
         esp_camera_fb_return(fb);
         Serial.println("dl_matrix3du_alloc failed");
         httpd_resp_send_500(req);
         return ESP_FAIL;
     }
 
-    out_buf = image_matrix->item;
-    out_len = fb->width * fb->height * 3;
-    out_width = fb->width;
-    out_height = fb->height;
-
-    s = fmt2rgb888(fb->buf, fb->len, fb->format, out_buf);
-    esp_camera_fb_return(fb);
-    if(!s){
-        dl_matrix3du_free(image_matrix);
-        Serial.println("to rgb888 failed");
-        httpd_resp_send_500(req);
-        return ESP_FAIL;
-    }
-
-    jpg_chunking_t jchunk = {req, 0};
-    s = fmt2jpg_cb(out_buf, out_len, out_width, out_height, PIXFORMAT_RGB888, 90, jpg_encode_stream, &jchunk);
-    dl_matrix3du_free(image_matrix);
-    if(!s){
-        Serial.println("JPEG compression failed");
-        return ESP_FAIL;
-    }
-
-    int64_t fr_end = esp_timer_get_time();
-    return res;
-}
+   
+  
 
 static esp_err_t stream_handler(httpd_req_t *req){
     camera_fb_t * fb = NULL;
@@ -112,7 +91,7 @@ static esp_err_t stream_handler(httpd_req_t *req){
     size_t _jpg_buf_len = 0;
     uint8_t * _jpg_buf = NULL;
     char * part_buf[64];
-    dl_matrix3du_t *image_matrix = NULL;
+    //dl_matrix3du_t *image_matrix = NULL;
 
     static int64_t last_frame = 0;
     if(!last_frame) {
@@ -242,6 +221,13 @@ static esp_err_t cmd_handler(httpd_req_t *req)
       else if (val <   0) val = 0;       
       speed = val;
     }     
+    else if (!strcmp(variable, "xcoord"))
+  {
+    if (val > 255) val = 255;
+    xcoord = val;
+    speed_Coeff = (1 + (xcoord / 50.0));
+
+  }
     else if(!strcmp(variable, "nostop")) 
     {
       noStop = val;
@@ -262,7 +248,7 @@ static esp_err_t cmd_handler(httpd_req_t *req)
         ledcWrite(6,0);      // pin 15   
         delay(200);
       }
-      else if (val==2) {
+      else if (val==4) {
         Serial.println("TurnLeft");
         ledcWrite(3,0);
         ledcWrite(5,0); 
@@ -279,7 +265,7 @@ static esp_err_t cmd_handler(httpd_req_t *req)
         ledcWrite(5,0);     
         ledcWrite(6,0);  
       }
-      else if (val==4) {
+      else if (val==2) {
         Serial.println("TurnRight");
         ledcWrite(4,0);
         ledcWrite(6,0); 
@@ -334,43 +320,7 @@ static esp_err_t status_handler(httpd_req_t *req){
 }
 
 static const char PROGMEM INDEX_HTML[] = R"rawliteral(
-<!doctype html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>ESP32 OV2460</title>
-        <style>
-          body{font-family:Arial,Helvetica,sans-serif;background:#181818;color:#EFEFEF;font-size:16px}h2{font-size:18px}section.main{display:flex}#menu,section.main{flex-direction:column}#menu{display:none;flex-wrap:nowrap;min-width:340px;background:#363636;padding:8px;border-radius:4px;margin-top:-10px;margin-right:10px}#content{display:flex;flex-wrap:wrap;align-items:stretch}figure{padding:0;margin:0;-webkit-margin-before:0;margin-block-start:0;-webkit-margin-after:0;margin-block-end:0;-webkit-margin-start:0;margin-inline-start:0;-webkit-margin-end:0;margin-inline-end:0}figure img{display:block;width:100%;height:auto;border-radius:4px;margin-top:8px}@media (min-width: 800px) and (orientation:landscape){#content{display:flex;flex-wrap:nowrap;align-items:stretch}figure img{display:block;max-width:100%;max-height:calc(100vh - 40px);width:auto;height:auto}figure{padding:0;margin:0;-webkit-margin-before:0;margin-block-start:0;-webkit-margin-after:0;margin-block-end:0;-webkit-margin-start:0;margin-inline-start:0;-webkit-margin-end:0;margin-inline-end:0}}section#buttons{display:flex;flex-wrap:nowrap;justify-content:space-between}#nav-toggle{cursor:pointer;display:block}#nav-toggle-cb{outline:0;opacity:0;width:0;height:0}#nav-toggle-cb:checked+#menu{display:flex}.input-group{display:flex;flex-wrap:nowrap;line-height:22px;margin:5px 0}.input-group>label{display:inline-block;padding-right:10px;min-width:47%}.input-group input,.input-group select{flex-grow:1}.range-max,.range-min{display:inline-block;padding:0 5px}button{display:block;margin:5px;padding:0 12px;border:0;line-height:28px;cursor:pointer;color:#fff;background:#ff3034;border-radius:5px;font-size:16px;outline:0}button:hover{background:#ff494d}button:active{background:#f21c21}button.disabled{cursor:default;background:#a0a0a0}input[type=range]{-webkit-appearance:none;width:100%;height:22px;background:#363636;cursor:pointer;margin:0}input[type=range]:focus{outline:0}input[type=range]::-webkit-slider-runnable-track{width:100%;height:2px;cursor:pointer;background:#EFEFEF;border-radius:0;border:0 solid #EFEFEF}input[type=range]::-webkit-slider-thumb{border:1px solid rgba(0,0,30,0);height:22px;width:22px;border-radius:50px;background:#ff3034;cursor:pointer;-webkit-appearance:none;margin-top:-11.5px}input[type=range]:focus::-webkit-slider-runnable-track{background:#EFEFEF}input[type=range]::-moz-range-track{width:100%;height:2px;cursor:pointer;background:#EFEFEF;border-radius:0;border:0 solid #EFEFEF}input[type=range]::-moz-range-thumb{border:1px solid rgba(0,0,30,0);height:22px;width:22px;border-radius:50px;background:#ff3034;cursor:pointer}input[type=range]::-ms-track{width:100%;height:2px;cursor:pointer;background:0 0;border-color:transparent;color:transparent}input[type=range]::-ms-fill-lower{background:#EFEFEF;border:0 solid #EFEFEF;border-radius:0}input[type=range]::-ms-fill-upper{background:#EFEFEF;border:0 solid #EFEFEF;border-radius:0}input[type=range]::-ms-thumb{border:1px solid rgba(0,0,30,0);height:22px;width:22px;border-radius:50px;background:#ff3034;cursor:pointer;height:2px}input[type=range]:focus::-ms-fill-lower{background:#EFEFEF}input[type=range]:focus::-ms-fill-upper{background:#363636}.switch{display:block;position:relative;line-height:22px;font-size:16px;height:22px}.switch input{outline:0;opacity:0;width:0;height:0}.slider{width:50px;height:22px;border-radius:22px;cursor:pointer;background-color:grey}.slider,.slider:before{display:inline-block;transition:.4s}.slider:before{position:relative;content:"";border-radius:50%;height:16px;width:16px;left:4px;top:3px;background-color:#fff}input:checked+.slider{background-color:#ff3034}input:checked+.slider:before{-webkit-transform:translateX(26px);transform:translateX(26px)}select{border:1px solid #363636;font-size:14px;height:22px;outline:0;border-radius:5px}.image-container{position:relative;min-width:160px}.close{position:absolute;right:5px;top:5px;background:#ff3034;width:16px;height:16px;border-radius:100px;color:#fff;text-align:center;line-height:18px;cursor:pointer}.hidden{display:none}
-        </style>
-    </head>
-    <body>
-    <figure>
-      <div id="stream-container" class="image-container hidden">
-        <div class="close" id="close-stream">×</div>
-        <img id="stream" src="">
-      </div>
-    </figure>
-        <section class="main">
-            <section id="buttons">
-                <table>
-                <tr><td align="center"><button id="get-still">Get Still</button></td><td></td><td align="center"><button id="toggle-stream">Start Stream</button></td></tr>
-                <tr><td><input type="checkbox" id="nostop" onclick="var noStop=0;if (this.checked) noStop=1;fetch(document.location.origin+'/control?var=nostop&val='+noStop);">No Stop</td><td align="center"><button id="forward" onclick="fetch(document.location.origin+'/control?var=car&val=1');">Forward</button></td><td></td></tr>
-                <tr><td align="center"><button id="turnleft" onclick="fetch(document.location.origin+'/control?var=car&val=2');">TurnLeft</button></td><td align="center"><button id="stop" onclick="fetch(document.location.origin+'/control?var=car&val=3');">Stop</button></td><td align="center"><button id="turnright" onclick="fetch(document.location.origin+'/control?var=car&val=4');">TurnRight</button></td></tr>
-                <tr><td></td><td align="center"><button id="backward" onclick="fetch(document.location.origin+'/control?var=car&val=5');">Backward</button></td><td></td></tr>
-                <tr><td>Flash</td><td align="center" colspan="2"><input type="range" id="flash" min="0" max="255" value="0" onchange="try{fetch(document.location.origin+'/control?var=flash&val='+this.value);}catch(e){}"></td></tr>
-                <tr><td>Speed</td><td align="center" colspan="2"><input type="range" id="speed" min="0" max="255" value="255" onchange="try{fetch(document.location.origin+'/control?var=speed&val='+this.value);}catch(e){}"></td></tr>
-                <tr><td>Servo</td><td align="center" colspan="2"><input type="range" id="servo" min="325" max="650" value="487" onchange="try{fetch(document.location.origin+'/control?var=servo&val='+this.value);}catch(e){}"></td></tr>
-                <tr><td>Quality</td><td align="center" colspan="2"><input type="range" id="quality" min="10" max="63" value="10" onchange="try{fetch(document.location.origin+'/control?var=quality&val='+this.value);}catch(e){}"></td></tr>
-                <tr><td>Resolution</td><td align="center" colspan="2"><input type="range" id="framesize" min="0" max="6" value="5" onchange="try{fetch(document.location.origin+'/control?var=framesize&val='+this.value);}catch(e){}"></td></tr>
-                </table>
-            </section>         
-        </section>
-        <script>
-          document.addEventListener('DOMContentLoaded',function(){function b(B){let C;switch(B.type){case'checkbox':C=B.checked?1:0;break;case'range':case'select-one':C=B.value;break;case'button':case'submit':C='1';break;default:return;}const D=`${c}/control?var=${B.id}&val=${C}`;fetch(D).then(E=>{console.log(`request to ${D} finished, status: ${E.status}`)})}var c=document.location.origin;const e=B=>{B.classList.add('hidden')},f=B=>{B.classList.remove('hidden')},g=B=>{B.classList.add('disabled'),B.disabled=!0},h=B=>{B.classList.remove('disabled'),B.disabled=!1},i=(B,C,D)=>{D=!(null!=D)||D;let E;'checkbox'===B.type?(E=B.checked,C=!!C,B.checked=C):(E=B.value,B.value=C),D&&E!==C?b(B):!D&&('aec'===B.id?C?e(v):f(v):'agc'===B.id?C?(f(t),e(s)):(e(t),f(s)):'awb_gain'===B.id?C?f(x):e(x):'face_recognize'===B.id&&(C?h(n):g(n)))};document.querySelectorAll('.close').forEach(B=>{B.onclick=()=>{e(B.parentNode)}}),fetch(`${c}/status`).then(function(B){return B.json()}).then(function(B){document.querySelectorAll('.default-action').forEach(C=>{i(C,B[C.id],!1)})});const j=document.getElementById('stream'),k=document.getElementById('stream-container'),l=document.getElementById('get-still'),m=document.getElementById('toggle-stream'),n=document.getElementById('face_enroll'),o=document.getElementById('close-stream'),p=()=>{window.stop(),m.innerHTML='Start Stream'},q=()=>{j.src=`${c+':81'}/stream`,f(k),m.innerHTML='Stop Stream'};l.onclick=()=>{p(),j.src=`${c}/capture?_cb=${Date.now()}`,f(k)},o.onclick=()=>{p(),e(k)},m.onclick=()=>{const B='Stop Stream'===m.innerHTML;B?p():q()},n.onclick=()=>{b(n)},document.querySelectorAll('.default-action').forEach(B=>{B.onchange=()=>b(B)});const r=document.getElementById('agc'),s=document.getElementById('agc_gain-group'),t=document.getElementById('gainceiling-group');r.onchange=()=>{b(r),r.checked?(f(t),e(s)):(e(t),f(s))};const u=document.getElementById('aec'),v=document.getElementById('aec_value-group');u.onchange=()=>{b(u),u.checked?e(v):f(v)};const w=document.getElementById('awb_gain'),x=document.getElementById('wb_mode-group');w.onchange=()=>{b(w),w.checked?f(x):e(x)};const y=document.getElementById('face_detect'),z=document.getElementById('face_recognize'),A=document.getElementById('framesize');A.onchange=()=>{b(A),5<A.value&&(i(y,!1),i(z,!1))},y.onchange=()=>{return 5<A.value?(alert('Please select CIF or lower resolution before enabling this feature!'),void i(y,!1)):void(b(y),!y.checked&&(g(n),i(z,!1)))},z.onchange=()=>{return 5<A.value?(alert('Please select CIF or lower resolution before enabling this feature!'),void i(z,!1)):void(b(z),z.checked?(h(n),i(y,!0)):g(n))}});
-        </script>
-    </body>
-</html>
+<!doctype html><html><head> <meta charset="utf-8"> <meta name="viewport" content="width=device-width,initial-scale=1"> <title>No 5 is alive</title> <style>html, body{/* prevent scrolling */ height: 100%; overflow: hidden;}body{font-family: Arial, Helvetica, sans-serif; background: #181818; color: #EFEFEF; font-size: 16px; margin: 0;}.container{max-width: 768px; margin: 0 auto;}ul{margin: 0; padding: 0;}li{list-style-type: none; padding: 3px 0;}.row{box-sizing: border-box; display: flex; flex: 0 1 auto; flex-direction: row; flex-wrap: wrap;}.col-xs{box-sizing: border-box; flex: 0 0 auto; padding-right: .5rem; padding-left: .5rem; flex-grow: 1; flex-basis: 0; max-width: 100%;}section.main{display: flex; flex-flow: column; justify-content: center; margin: 0 auto; position: relative;}#content{display: flex; flex-wrap: wrap; align-items: stretch}figure{padding: 0; margin: 0; -webkit-margin-before: 0; margin-block-start: 0; -webkit-margin-after: 0; margin-block-end: 0; -webkit-margin-start: 0; margin-inline-start: 0; -webkit-margin-end: 0; margin-inline-end: 0}figure img{display: block; width: 100%; height: auto; border-radius: 4px; margin-top: 8px}@media (min-width: 800px) and (orientation:landscape){#content{display: flex; flex-wrap: nowrap; align-items: stretch}figure img{display: block; max-width: 100%; max-height: calc(100vh - 40px); width: auto; height: auto}figure{padding: 0; margin: 0; -webkit-margin-before: 0; margin-block-start: 0; -webkit-margin-after: 0; margin-block-end: 0; -webkit-margin-start: 0; margin-inline-start: 0; -webkit-margin-end: 0; margin-inline-end: 0}}aside{margin-top: 1rem;}.stream-btn{display: flex; justify-content: space-between; margin: 0.5rem 0;}.input-group{display: flex; flex-wrap: nowrap; line-height: 22px; margin: 5px 0}.input-group input, .input-group select{flex-grow: 1}.range-max, .range-min{display: inline-block; padding: 0 5px}button{display: block; /*margin: 5px;*/ padding: 0 12px; border: 0; line-height: 28px; cursor: pointer; -moz-user-select: none; -ms-user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; color: #fff; background: #ff3034; border-radius: 5px; font-size: 16px; outline: 0}button:hover{background: #ff494d}button:active{background: #f21c21}button.disabled{cursor: default; background: #a0a0a0}input[type=range]{-webkit-appearance: none; width: 100%; height: 22px; background: #363636; cursor: pointer; margin: 0}input[type=range]:focus{outline: 0}input[type=range]::-webkit-slider-runnable-track{width: 100%; height: 2px; cursor: pointer; background: #EFEFEF; border-radius: 0; border: 0 solid #EFEFEF}input[type=range]::-webkit-slider-thumb{border: 1px solid rgba(0, 0, 30, 0); height: 22px; width: 22px; border-radius: 50%; background: #ff3034; cursor: pointer; -webkit-appearance: none; margin-top: -11.5px}input[type=range]:focus::-webkit-slider-runnable-track{background: #EFEFEF}input[type=range]::-moz-range-track{width: 100%; height: 2px; cursor: pointer; background: #EFEFEF; border-radius: 0; border: 0 solid #EFEFEF}input[type=range]::-moz-range-thumb{border: 1px solid rgba(0, 0, 30, 0); height: 22px; width: 22px; border-radius: 50px; background: #ff3034; cursor: pointer}.switch{display: block; position: relative; line-height: 22px; font-size: 16px; height: 22px}.switch input{outline: 0; opacity: 0; width: 0; height: 0}select{border: 1px solid #363636; font-size: 14px; height: 22px; outline: 0; border-radius: 5px}.image-container{position: relative; min-width: 160px; min-height: 244px; border: 1px solid #333;}.image-container img{width: 100%; height: auto;}.hidden{display: none}.close{position: absolute; right: 5px; top: 5px; background: #ff3034; width: 16px; height: 16px; border-radius: 100px; color: #fff; text-align: center; line-height: 18px; cursor: pointer}#joystick{align-items: center; display: flex; justify-content: center; margin: auto;}#wrapper{background: #333; border-radius: 50%; display: flex; justify-content: center; align-items: center; width: 100px; height: 100px;}.joystick{background-color: blue; border-radius: 100%; cursor: pointer; height: 50%; user-select: none; width: 50%;}</style></head><body> <div class="col-xs"> <div class="container"> <section class="main"> <div id="stream-container" class="image-container hidden"> <div class="close" id="close-stream">×</div><img id="stream" src=""> <nav id="buttons"></nav> </div><div class="stream-btn"> <button id="get-still">Get Still</button> <button id="toggle-stream">Start Stream</button> </div><div id="joystick"> <div id="wrapper"> </div></div><aside> <ul> <li>Speed<input type="range" id="speed" min="0" max="255" value="110" onchange="try{fetch(document.location.origin+'/control?var=speed&val='+this.value);}catch(e){}"> </li><li>Servo<input type="range" id="servo" min="325" max="650" value="480" oninput="try{fetch(document.location.origin+'/control?var=servo&val='+this.value);}catch(e){}"> </li><li>Flash<input type="range" id="flash" min="0" max="255" value="0" onchange="try{fetch(document.location.origin+'/control?var=flash&val='+this.value);}catch(e){}"> </li><li>Quality<input type="range" id="quality" min="10" max="63" value="10" onchange="try{fetch(document.location.origin+'/control?var=quality&val='+this.value);}catch(e){}"> </li><li>Resolution<input type="range" id="framesize" min="0" max="6" value="5" onchange="try{fetch(document.location.origin+'/control?var=framesize&val='+this.value);}catch(e){}"> </li></ul> </aside> </section> </div></div><script>function control(prop, val){var loc=document.location.origin; fetch(loc + '/control?var=' + prop + '&val=' + val);}function mstart(id){control('nostop', 1); control('car', id);}function mstop(){control('nostop', 0); control('car', 3);}</script> <script>const e=B=>{B.classList.add('hidden')}, f=B=>{B.classList.remove('hidden')}; var c=document.location.origin; const j=document.getElementById('stream'), k=document.getElementById('stream-container'), l=document.getElementById('get-still'), m=document.getElementById('toggle-stream'), o=document.getElementById('close-stream'), p=()=>{window.stop(), m.innerHTML='Start Stream'}, q=()=>{j.src=`${c + ':81'}/stream`, f(k), m.innerHTML='Stop Stream'}; l.onclick=()=>{p(), j.src=`${c}/capture?_cb=${Date.now()}`, f(k)}, o.onclick=()=>{p(), e(k)}, m.onclick=()=>{const B='Stop Stream'===m.innerHTML; B ? p() : q();}</script> <script>/* Joystick */ var motPrev=-1; function updatePos(){var pos=joystick.getPosition(); var pi=Math.PI; var pi34=3 / 4 * pi; var deg=pos.a * (180 / pi); var mot; if (pos.a > -pi34 && pos.a < -pi / 4){mot=1;}else if (pos.a > -pi / 4 && pos.a < pi / 4){mot=4;}else if (pos.a > pi / 4 && pos.a < pi34){mot=5;}else if ((pos.a > pi34 && pos.a <=pi) || (pos.a < -pi34)){mot=2;}if (mot !=motPrev && pos.r > 10){motPrev=mot; mstart(mot);}}function createJoystick(parent){const maxDiff=100; const stick=document.createElement('div'); stick.classList.add('joystick'); stick.addEventListener('mousedown', handleMouseDown); document.addEventListener('mousemove', handleMouseMove); document.addEventListener('mouseup', handleMouseUp); stick.addEventListener('touchstart', handleMouseDown); document.addEventListener('touchmove', handleMouseMove); document.addEventListener('touchend', handleMouseUp); let dragStart=null; let currentPos={x: 0, y: 0}; function handleMouseDown(event){stick.style.transition='0s'; if (event.changedTouches){dragStart={x: event.changedTouches[0].clientX, y: event.changedTouches[0].clientY,}; return;}dragStart={x: event.clientX, y: event.clientY,};}function handleMouseMove(event){if (dragStart===null) return; event.preventDefault(); if (event.changedTouches){event.clientX=event.changedTouches[0].clientX; event.clientY=event.changedTouches[0].clientY;}const xDiff=event.clientX - dragStart.x; const yDiff=event.clientY - dragStart.y; const angle=Math.atan2(yDiff, xDiff); const distance=Math.min(maxDiff, Math.hypot(xDiff, yDiff)); const xNew=distance * Math.cos(angle); const yNew=distance * Math.sin(angle); stick.style.transform=`translate3d(${xNew}px, ${yNew}px, 0px)`; currentPos={x: xNew, y: yNew, a: angle, r: distance};}function handleMouseUp(event){if (dragStart===null) return; stick.style.transition='.2s'; stick.style.transform=`translate3d(0px, 0px, 0px)`; dragStart=null; currentPos={x: 0, y: 0, a: 0, r: 0}; motPrev=-1; mstop();}parent.appendChild(stick); return{getPosition: ()=> currentPos,};}const joystick=createJoystick(document.getElementById('wrapper')); setInterval(updatePos, 100); </script></body></html>
 )rawliteral";
 
 static esp_err_t index_handler(httpd_req_t *req){

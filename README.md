@@ -1,4 +1,4 @@
-# ESP32-CAM_TANK
+# ESP32CAM-Robot
 
 Esp32 controlling tracked vehicle while streaming video.
 Serial console tells you where to connect. And use your own wifi credentials, not mine.
@@ -17,5 +17,3 @@ ESP-Cam, motor driver, 5V switching regulator.
 Extern antenna:
 ![DSC02372.jpg](DSC02372.jpg "extant")
 
-Video:
-https://youtu.be/qUAGnk382mc
