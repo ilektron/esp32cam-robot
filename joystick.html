@@ -1,16 +1,17 @@
 <!doctype html>
 <html>
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>No 5 is alive</title>
     <style>
-        html,
-        body {
-            /* prevent scrolling */
-            height: 100%;
-            overflow: hidden;
+        @media (hover: none) and (pointer: coarse) { 
+            html,
+            body {
+                /* prevent scrolling on touch devices*/
+                height: 100%;
+                overflow: hidden;
+            }
         }
 
         body {
@@ -22,7 +23,7 @@
         }
 
         .container {
-            max-width: 768px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -63,65 +64,48 @@
             position: relative;
         }
 
-        #content {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: stretch
-        }
-
-        figure {
-            padding: 0;
-            margin: 0;
-            -webkit-margin-before: 0;
-            margin-block-start: 0;
-            -webkit-margin-after: 0;
-            margin-block-end: 0;
-            -webkit-margin-start: 0;
-            margin-inline-start: 0;
-            -webkit-margin-end: 0;
-            margin-inline-end: 0
-        }
-
-        figure img {
-            display: block;
-            width: 100%;
-            height: auto;
-            border-radius: 4px;
-            margin-top: 8px
-        }
-
-        @media (min-width: 800px) and (orientation:landscape) {
-            #content {
-                display: flex;
-                flex-wrap: nowrap;
-                align-items: stretch
-            }
-
-            figure img {
-                display: block;
-                max-width: 100%;
-                max-height: calc(100vh - 40px);
-                width: auto;
-                height: auto
-            }
-
-            figure {
-                padding: 0;
-                margin: 0;
-                -webkit-margin-before: 0;
-                margin-block-start: 0;
-                -webkit-margin-after: 0;
-                margin-block-end: 0;
-                -webkit-margin-start: 0;
-                margin-inline-start: 0;
-                -webkit-margin-end: 0;
-                margin-inline-end: 0
-            }
-        }
 
         aside {
-            margin-top: 1rem;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }            
+        ul.right li {
+            position: relative;
+        }
 
+        input[type=range][orient=vertical] {
+            position: absolute;
+            transform: rotate(-270deg) translateY(30px);
+            transform-origin: bottom left;
+            width: 170px;
+            
+        }
+        #joystick {
+            align-items: center;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            /**margin: auto;*/
+        }
+
+        #wrapper {
+            background: #333;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 65px;
+            height: 65px;
+        }
+
+        .joystick {
+            background-color: blue;
+            border-radius: 100%;
+            cursor: pointer;
+            height: 50%;
+            user-select: none;
+            width: 50%;
         }
 
         .stream-btn {
@@ -130,27 +114,8 @@
             margin: 0.5rem 0;
         }
 
-        .input-group {
-            display: flex;
-            flex-wrap: nowrap;
-            line-height: 22px;
-            margin: 5px 0
-        }
-
-        .input-group input,
-        .input-group select {
-            flex-grow: 1
-        }
-
-        .range-max,
-        .range-min {
-            display: inline-block;
-            padding: 0 5px
-        }
-
         button {
             display: block;
-            /*margin: 5px;*/
             padding: 0 12px;
             border: 0;
             line-height: 28px;
@@ -166,18 +131,11 @@
             outline: 0
         }
 
-        button:hover {
-            background: #ff494d
-        }
-
-        button:active {
-            background: #f21c21
-        }
-
         button.disabled {
             cursor: default;
             background: #a0a0a0
         }
+
 
         input[type=range] {
             -webkit-appearance: none;
@@ -234,41 +192,6 @@
             cursor: pointer
         }
 
-        .switch {
-            display: block;
-            position: relative;
-            line-height: 22px;
-            font-size: 16px;
-            height: 22px
-        }
-
-        .switch input {
-            outline: 0;
-            opacity: 0;
-            width: 0;
-            height: 0
-        }
-
-        select {
-            border: 1px solid #363636;
-            font-size: 14px;
-            height: 22px;
-            outline: 0;
-            border-radius: 5px
-        }
-
-        .image-container {
-            position: relative;
-            min-width: 160px;
-            min-height: 244px;
-            border: 1px solid #333;
-        }
-
-        .image-container img {
-            width: 100%;
-            height: auto;
-        }
-
         .hidden {
             display: none
         }
@@ -287,39 +210,65 @@
             cursor: pointer
         }
 
-        #joystick {
-            align-items: center;
-            display: flex;
-            justify-content: center;
-            margin: auto;
 
+        .image-container {
+            position: relative;
+            min-width: 320px;
+            min-height: 240px;
+            border: 1px solid #333;
         }
 
-        #wrapper {
-            background: #333;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100px;
-            height: 100px;
+        .image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            /*padding-bottom: 75%;*/
         }
 
-        .joystick {
-            background-color: blue;
-            border-radius: 100%;
-            cursor: pointer;
-            height: 50%;
-            user-select: none;
-            width: 50%;
+        /*QVGA 320x240,CIF 352x288,VGA  640x480,SVGA 800x600,XGA 1024x768,SXGA 1280x1024,UXGA 1600x1200, 1.333*/
+
+        @media (max-width: 800px) and (orientation:landscape) {
+            aside {
+                position: absolute;
+                bottom: -30px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
         }
+        @media (min-width: 800px) and (orientation:landscape) {
+
+            .image-container img {
+                display: block;
+                max-width: 100%;
+                max-height: calc(100vh - 40px);
+                width: auto;
+                height: auto
+            }
+            aside {
+                position: absolute;
+                bottom: -190px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+           
+        }
+        .stream-off aside {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                transform: translateX(0);
+            }
+      
+
+
     </style>
 </head>
 
 <body>
     <div class="col-xs">
         <div class="container">
-            <section class="main">
+            <section class="main stream-off">
                 <div id="stream-container" class="image-container hidden">
                     <div class="close" id="close-stream">×</div>
                     <img id="stream" src="">
@@ -329,18 +278,16 @@
                     <button id="get-still">Get Still</button>
                     <button id="toggle-stream">Start Stream</button>
                 </div>
-                <div id="joystick">
-                    <div id="wrapper">
-                    </div>
-                </div>
+               
 
                 <aside>
-                    <ul>
+                        <div id="joystick">
+                                <div id="wrapper">
+                                </div>
+                            </div>
+                    <ul class="left">
                         <li>Speed<input type="range" id="speed" min="0" max="255" value="110"
                                 onchange="try{fetch(document.location.origin+'/control?var=speed&val='+this.value);}catch(e){}">
-                        </li>
-                        <li>Servo<input type="range" id="servo" min="325" max="650" value="480"
-                                oninput="try{fetch(document.location.origin+'/control?var=servo&val='+this.value);}catch(e){}">
                         </li>
                         <li>Flash<input type="range" id="flash" min="0" max="255" value="0"
                                 onchange="try{fetch(document.location.origin+'/control?var=flash&val='+this.value);}catch(e){}">
@@ -348,9 +295,17 @@
                         <li>Quality<input type="range" id="quality" min="10" max="63" value="10"
                                 onchange="try{fetch(document.location.origin+'/control?var=quality&val='+this.value);}catch(e){}">
                         </li>
-                        <li>Resolution<input type="range" id="framesize" min="0" max="6" value="5"
+                        <li>Resolution<input type="range" id="framesize" min="3" max="10" value="5"
                                 onchange="try{fetch(document.location.origin+'/control?var=framesize&val='+this.value);}catch(e){}">
                         </li>
+                    </ul>
+                   
+                    <ul class="right">
+                        <li><span>Servo</span><input type="range" orient="vertical" id="servo" min="325" max="650" value="480"
+                            onchange="try{fetch(document.location.origin+'/control?var=servo&val='+this.value);}catch(e){}">
+                            <!--unfortunately oninput produces some problems -->
+                        </li>
+
                     </ul>
                 </aside>
             </section>
@@ -366,9 +321,11 @@
     </script>
     <script>
         const e = B => {
-            B.classList.add('hidden')
+            B.classList.add('hidden');
+            B.parentElement.classList.add('stream-off')
         }, f = B => {
-            B.classList.remove('hidden')
+            B.classList.remove('hidden');
+            B.parentElement.classList.remove('stream-off')
         };
         var c = document.location.origin;
         const j = document.getElementById('stream'),
@@ -401,11 +358,12 @@
             var pos = joystick.getPosition();
             var pi = Math.PI;
             var pi34 = 3 / 4 * pi;
+            var pi4 = pi / 4;
             var deg = pos.a * (180 / pi);
             var mot;
-            if (pos.a > -pi34 && pos.a < -pi / 4) {
+            if (pos.a > -pi34 && pos.a < -pi4) {
                 mot = 1;
-            } else if (pos.a > -pi / 4 && pos.a < pi / 4) {
+            } else if (pos.a > -pi / 4 && pos.a < pi4) {
                 mot = 4;
             } else if (pos.a > pi / 4 && pos.a < pi34) {
                 mot = 5;
@@ -419,7 +377,7 @@
         }
 
         function createJoystick(parent) {
-            const maxDiff = 100;
+            const maxDiff = 50;
             const stick = document.createElement('div');
             stick.classList.add('joystick');
 

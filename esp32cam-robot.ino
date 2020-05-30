@@ -1,12 +1,10 @@
 /*
 ESP32-CAM Remote Control 
-https://github.com/PepeTheFroggie/ESP32CAM_RCTANK
 https://www.esp32.com/viewtopic.php?f=19&t=11337
-
 */
 
-const char* ssid = "";
-const char* password = "";
+const char* ssid = "knorrewan";
+const char* password = "35910680627226189711";
 
 #include "esp_wifi.h"
 #include "esp_camera.h"
