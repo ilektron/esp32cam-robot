@@ -12,6 +12,6 @@ The uncompressed html code is included. It also contain a Button variante.
 
 
 <p>Screenshot iPhone:</p>
-<img src="screenshot.jpg" width="500px">
+<img src="screenshot1.jpg" width="500px">
 
 
