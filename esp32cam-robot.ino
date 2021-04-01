@@ -1,16 +1,16 @@
 /*
-ESP32-CAM Remote Control 
+ESP32-CAM Remote Control
 https://www.esp32.com/viewtopic.php?f=19&t=11337
 */
 
-const char* ssid = "knorrewan";
-const char* password = "35910680627226189711";
+const char *ssid = "SSID";
+const char *password = "Passphrase";
 
-#include "esp_wifi.h"
 #include "esp_camera.h"
-#include <WiFi.h>
-#include "soc/soc.h"
+#include "esp_wifi.h"
 #include "soc/rtc_cntl_reg.h"
+#include "soc/soc.h"
+#include <WiFi.h>
 
 //
 // WARNING!!! Make sure that you have either selected ESP32 Wrover Module,
@@ -23,61 +23,61 @@ const char* password = "35910680627226189711";
 #define CAMERA_MODEL_AI_THINKER
 
 #if defined(CAMERA_MODEL_WROVER_KIT)
-#define PWDN_GPIO_NUM    -1
-#define RESET_GPIO_NUM   -1
-#define XCLK_GPIO_NUM    21
-#define SIOD_GPIO_NUM    26
-#define SIOC_GPIO_NUM    27
+#define PWDN_GPIO_NUM -1
+#define RESET_GPIO_NUM -1
+#define XCLK_GPIO_NUM 21
+#define SIOD_GPIO_NUM 26
+#define SIOC_GPIO_NUM 27
 
-#define Y9_GPIO_NUM      35
-#define Y8_GPIO_NUM      34
-#define Y7_GPIO_NUM      39
-#define Y6_GPIO_NUM      36
-#define Y5_GPIO_NUM      19
-#define Y4_GPIO_NUM      18
-#define Y3_GPIO_NUM       5
-#define Y2_GPIO_NUM       4
-#define VSYNC_GPIO_NUM   25
-#define HREF_GPIO_NUM    23
-#define PCLK_GPIO_NUM    22
+#define Y9_GPIO_NUM 35
+#define Y8_GPIO_NUM 34
+#define Y7_GPIO_NUM 39
+#define Y6_GPIO_NUM 36
+#define Y5_GPIO_NUM 19
+#define Y4_GPIO_NUM 18
+#define Y3_GPIO_NUM 5
+#define Y2_GPIO_NUM 4
+#define VSYNC_GPIO_NUM 25
+#define HREF_GPIO_NUM 23
+#define PCLK_GPIO_NUM 22
 
 #elif defined(CAMERA_MODEL_M5STACK_PSRAM)
-#define PWDN_GPIO_NUM     -1
-#define RESET_GPIO_NUM    15
-#define XCLK_GPIO_NUM     27
-#define SIOD_GPIO_NUM     25
-#define SIOC_GPIO_NUM     23
+#define PWDN_GPIO_NUM -1
+#define RESET_GPIO_NUM 15
+#define XCLK_GPIO_NUM 27
+#define SIOD_GPIO_NUM 25
+#define SIOC_GPIO_NUM 23
 
-#define Y9_GPIO_NUM       19
-#define Y8_GPIO_NUM       36
-#define Y7_GPIO_NUM       18
-#define Y6_GPIO_NUM       39
-#define Y5_GPIO_NUM        5
-#define Y4_GPIO_NUM       34
-#define Y3_GPIO_NUM       35
-#define Y2_GPIO_NUM       32
-#define VSYNC_GPIO_NUM    22
-#define HREF_GPIO_NUM     26
-#define PCLK_GPIO_NUM     21
+#define Y9_GPIO_NUM 19
+#define Y8_GPIO_NUM 36
+#define Y7_GPIO_NUM 18
+#define Y6_GPIO_NUM 39
+#define Y5_GPIO_NUM 5
+#define Y4_GPIO_NUM 34
+#define Y3_GPIO_NUM 35
+#define Y2_GPIO_NUM 32
+#define VSYNC_GPIO_NUM 22
+#define HREF_GPIO_NUM 26
+#define PCLK_GPIO_NUM 21
 
 #elif defined(CAMERA_MODEL_AI_THINKER)
-#define PWDN_GPIO_NUM     32
-#define RESET_GPIO_NUM    -1
-#define XCLK_GPIO_NUM      0
-#define SIOD_GPIO_NUM     26
-#define SIOC_GPIO_NUM     27
+#define PWDN_GPIO_NUM 32
+#define RESET_GPIO_NUM -1
+#define XCLK_GPIO_NUM 0
+#define SIOD_GPIO_NUM 26
+#define SIOC_GPIO_NUM 27
 
-#define Y9_GPIO_NUM       35
-#define Y8_GPIO_NUM       34
-#define Y7_GPIO_NUM       39
-#define Y6_GPIO_NUM       36
-#define Y5_GPIO_NUM       21
-#define Y4_GPIO_NUM       19
-#define Y3_GPIO_NUM       18
-#define Y2_GPIO_NUM        5
-#define VSYNC_GPIO_NUM    25
-#define HREF_GPIO_NUM     23
-#define PCLK_GPIO_NUM     22
+#define Y9_GPIO_NUM 35
+#define Y8_GPIO_NUM 34
+#define Y7_GPIO_NUM 39
+#define Y6_GPIO_NUM 36
+#define Y5_GPIO_NUM 21
+#define Y4_GPIO_NUM 19
+#define Y3_GPIO_NUM 18
+#define Y2_GPIO_NUM 5
+#define VSYNC_GPIO_NUM 25
+#define HREF_GPIO_NUM 23
+#define PCLK_GPIO_NUM 22
 
 #else
 #error "Camera model not selected"
@@ -85,34 +85,27 @@ const char* password = "35910680627226189711";
 
 void startCameraServer();
 
-const int MotPin0 = 12;  
-const int MotPin1 = 13;  
-const int MotPin2 = 14;  
-const int MotPin3 = 15;  
+constexpr int MotPin0 = 12;
+constexpr int MotPin1 = 13;
+constexpr int MotPin2 = 14;
+constexpr int MotPin3 = 15;
 
-void initMotors() 
-{
+void initMotors() {
+  // TODO define the different PWM devices
   ledcSetup(3, 2000, 8); // 2000 hz PWM, 8-bit resolution
   ledcSetup(4, 2000, 8); // 2000 hz PWM, 8-bit resolution
   ledcSetup(5, 2000, 8); // 2000 hz PWM, 8-bit resolution
   ledcSetup(6, 2000, 8); // 2000 hz PWM, 8-bit resolution
-  ledcAttachPin(MotPin0, 3); 
-  ledcAttachPin(MotPin1, 4); 
-  ledcAttachPin(MotPin2, 5); 
-  ledcAttachPin(MotPin3, 6); 
+  ledcAttachPin(MotPin0, 3);
+  ledcAttachPin(MotPin1, 4);
+  ledcAttachPin(MotPin2, 5);
+  ledcAttachPin(MotPin3, 6);
 }
 
-const int ServoPin = 2;  
-void initServo() 
-{
-  ledcSetup(8, 50, 16); // 50 hz PWM, 16-bit resolution, range from 3250 to 6500.
-  ledcAttachPin(ServoPin, 8); 
-}
+void setup() {
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG,
+                 0); // prevent brownouts by silencing them
 
-void setup() 
-{
-  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // prevent brownouts by silencing them
-  
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
@@ -138,8 +131,9 @@ void setup()
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
-  //init with high specs to pre-allocate larger buffers
-  if(psramFound()){
+
+  // init with high specs to pre-allocate larger buffers
+  if (psramFound()) {
     config.frame_size = FRAMESIZE_QVGA;
     config.jpeg_quality = 10;
     config.fb_count = 2;
@@ -156,70 +150,66 @@ void setup()
     return;
   }
 
-  //drop down frame size for higher initial frame rate
-  sensor_t * s = esp_camera_sensor_get();
+  // drop down frame size for higher initial frame rate
+  sensor_t *s = esp_camera_sensor_get();
   s->set_framesize(s, FRAMESIZE_QVGA);
-  //s->set_vflip(s, 0);
-  //s->set_hmirror(s, 1);
+  s->set_vflip(s, 1);
+  s->set_hmirror(s, 1);
 
   // Remote Control Car
   initMotors();
-  initServo();
-  
+
   ledcSetup(7, 5000, 8);
-  ledcAttachPin(4, 7);  //pin4 is LED
-  
+  ledcAttachPin(4, 7); // pin4 is LED
+
   Serial.println("ssid: " + (String)ssid);
-  Serial.println("password: " + (String)password);
-  
+  // Serial.println("password: " + (String)password);
+
   WiFi.begin(ssid, password);
   delay(500);
 
-  long int StartTime=millis();
-  while (WiFi.status() != WL_CONNECTED) 
-  {
-      delay(500);
-      if ((StartTime+10000) < millis()) break;
-  } 
+  long int StartTime = millis();
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    if ((StartTime + 10000) < millis())
+      break;
+  }
 
-  /*
-  int8_t power;
-  esp_wifi_set_max_tx_power(20);
-  esp_wifi_get_max_tx_power(&power);
-  Serial.printf("wifi power: %d \n",power); 
-  */
-  
+  // int8_t power;
+  // esp_wifi_set_max_tx_power(20);
+  // esp_wifi_get_max_tx_power(&power);
+  // Serial.printf("wifi power: %d \n",power);
+
   startCameraServer();
 
-  if (WiFi.status() == WL_CONNECTED) 
-  {
+  if (WiFi.status() == WL_CONNECTED) {
     Serial.println("");
-    Serial.println("WiFi connected");    
+    Serial.println("WiFi connected");
     Serial.print("Camera Ready! Use 'http://");
     Serial.print(WiFi.localIP());
     Serial.println("' to connect");
   } else {
     Serial.println("");
-    Serial.println("WiFi disconnected");      
+    Serial.println("WiFi disconnected");
     Serial.print("Camera Ready! Use 'http://");
     Serial.print(WiFi.softAPIP());
     Serial.println("' to connect");
-    char* apssid = "ESP32-CAM";
-    char* appassword = "12345678";         //AP password require at least 8 characters.
-    WiFi.softAP((WiFi.softAPIP().toString()+"_"+(String)apssid).c_str(), appassword);    
+    char *apssid = "ESP32-CAM";
+    char *appassword = "12345678"; // AP password require at least 8 characters.
+    WiFi.softAP((WiFi.softAPIP().toString() + "_" + (String)apssid).c_str(),
+                appassword);
   }
 
-  for (int i=0;i<5;i++) 
-  {
-    ledcWrite(7,10);  // flash led
+  for (int i = 0; i < 5; i++) {
+    ledcWrite(7, 10); // flash led
     delay(200);
-    ledcWrite(7,0);
-    delay(200);    
-  }       
+    ledcWrite(7, 0);
+    delay(200);
+  }
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   delay(1000);
-  Serial.printf("RSSi: %ld dBm\n",WiFi.RSSI()); 
+  Serial.printf("RSSi: %ld dBm\n", WiFi.RSSI());
 }

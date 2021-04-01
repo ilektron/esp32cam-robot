@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>No 5 is alive</title>
     <style>
-        @media (hover: none) and (pointer: coarse) { 
+        @media (hover: none) and (pointer: coarse) {
             html,
             body {
                 /* prevent scrolling on touch devices*/
@@ -69,7 +69,7 @@
             display: flex;
             justify-content: space-around;
             flex-wrap: wrap;
-        }            
+        }
         ul.right li {
             position: relative;
         }
@@ -79,7 +79,7 @@
             transform: rotate(-270deg) translateY(30px);
             transform-origin: bottom left;
             width: 170px;
-            
+
         }
         #joystick {
             align-items: center;
@@ -95,8 +95,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 65px;
-            height: 65px;
+            width: 200px;
+            height: 200px;
         }
 
         .joystick {
@@ -251,7 +251,7 @@
                 left: 50%;
                 transform: translateX(-50%);
             }
-           
+
         }
         .stream-off aside {
                 position: relative;
@@ -259,7 +259,7 @@
                 left: auto;
                 transform: translateX(0);
             }
-      
+
 
 
     </style>
@@ -278,7 +278,7 @@
                     <button id="get-still">Get Still</button>
                     <button id="toggle-stream">Start Stream</button>
                 </div>
-               
+
 
                 <aside>
                         <div id="joystick">
@@ -299,14 +299,6 @@
                                 onchange="try{fetch(document.location.origin+'/control?var=framesize&val='+this.value);}catch(e){}">
                         </li>
                     </ul>
-                   
-                    <ul class="right">
-                        <li><span>Servo</span><input type="range" orient="vertical" id="servo" min="325" max="650" value="480"
-                            onchange="try{fetch(document.location.origin+'/control?var=servo&val='+this.value);}catch(e){}">
-                            <!--unfortunately oninput produces some problems -->
-                        </li>
-
-                    </ul>
                 </aside>
             </section>
         </div>
@@ -314,10 +306,11 @@
     <script>
         function control(prop, val) {
             var loc = document.location.origin;
-            fetch(loc + '/control?var=' + prop + '&val=' + val);
+            /* fetch(loc + '/control?var=' + prop + '&val=' + Math.floor(val)); */
+          console.log(prop, val);
         }
-        function mstart(id) { control('nostop', 1); control('car', id); }
-        function mstop() { control('nostop', 0); control('car', 3); }
+        function mstart(turn, drive) { control('drive', drive); control('turn', turn); }
+        function mstop() { control('nostop', 0); }
     </script>
     <script>
         const e = B => {
@@ -353,31 +346,20 @@
     </script>
     <script>
         /* Joystick */
-        var motPrev = -1;
+        var isStopped = 0;
         function updatePos() {
             var pos = joystick.getPosition();
-            var pi = Math.PI;
-            var pi34 = 3 / 4 * pi;
-            var pi4 = pi / 4;
-            var deg = pos.a * (180 / pi);
-            var mot;
-            if (pos.a > -pi34 && pos.a < -pi4) {
-                mot = 1;
-            } else if (pos.a > -pi / 4 && pos.a < pi4) {
-                mot = 4;
-            } else if (pos.a > pi / 4 && pos.a < pi34) {
-                mot = 5;
-            } else if ((pos.a > pi34 && pos.a <= pi) || (pos.a < -pi34)) {
-                mot = 2;
-            }
-            if (mot != motPrev && pos.r > 10) {
-                motPrev = mot;
-                mstart(mot);
+            if (pos.r > 4) {
+                isStopped = 0;
+                mstart(pos.x, pos.y);
+            } else if (isStopped) {
+                mstop();
+                isStopped = 1;
             }
         }
 
         function createJoystick(parent) {
-            const maxDiff = 50;
+            const maxDiff = 100;
             const stick = document.createElement('div');
             stick.classList.add('joystick');
 
@@ -430,7 +412,6 @@
                 stick.style.transform = `translate3d(0px, 0px, 0px)`;
                 dragStart = null;
                 currentPos = { x: 0, y: 0, a: 0, r: 0 };
-                motPrev = -1;
                 mstop();
             }
 
