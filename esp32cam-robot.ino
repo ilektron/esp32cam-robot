@@ -171,8 +171,7 @@ void setup() {
   long int StartTime = millis();
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    if ((StartTime + 10000) < millis())
-      break;
+    if ((StartTime + 10000) < millis()) break;
   }
 
   // int8_t power;
@@ -196,8 +195,7 @@ void setup() {
     Serial.println("' to connect");
     char *apssid = "ESP32-CAM";
     char *appassword = "12345678"; // AP password require at least 8 characters.
-    WiFi.softAP((WiFi.softAPIP().toString() + "_" + (String)apssid).c_str(),
-                appassword);
+    WiFi.softAP((WiFi.softAPIP().toString() + "_" + (String)apssid).c_str(), appassword);
   }
 
   for (int i = 0; i < 5; i++) {
