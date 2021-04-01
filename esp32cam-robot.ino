@@ -3,9 +3,6 @@ ESP32-CAM Remote Control
 https://www.esp32.com/viewtopic.php?f=19&t=11337
 */
 
-const char *ssid = "SSID";
-const char *password = "Passphrase";
-
 #include "esp_camera.h"
 #include "esp_wifi.h"
 #include "soc/rtc_cntl_reg.h"
@@ -85,17 +82,30 @@ const char *password = "Passphrase";
 
 void startCameraServer();
 
-constexpr int MotPin0 = 12;
-constexpr int MotPin1 = 13;
-constexpr int MotPin2 = 14;
-constexpr int MotPin3 = 15;
+constexpr int LEFT_MOTOR_PIN_FWD = 12;
+constexpr int LEFT_MOTOR_PIN_REV = 13;
+constexpr int RIGHT_MOTOR_PIN_FWD = 14;
+constexpr int RIGHT_MOTOR_PIN_REv = 15;
+
+constexpr int LEFT_MOTOR_CHANNEL_FWD = 3;
+constexpr int LEFT_MOTOR_CHANNEL_REV = 4;
+constexpr int RIGHT_MOTOR_CHANNEL_FWD = 5;
+constexpr int RIGHT_MOTOR_CHANNEL_REV = 6;
+
+constexpr int MOTOR_PWM_FREQ = 2000; // 2000 hz freq
+constexpr int MOTOR_PWM_RESOLUTION = 8; // 0-256 duty cycle resolution
+
+const char *ssid = "SSID";
+const char *password = "Passphrase";
+
 
 void initMotors() {
   // TODO define the different PWM devices
-  ledcSetup(3, 2000, 8); // 2000 hz PWM, 8-bit resolution
-  ledcSetup(4, 2000, 8); // 2000 hz PWM, 8-bit resolution
-  ledcSetup(5, 2000, 8); // 2000 hz PWM, 8-bit resolution
-  ledcSetup(6, 2000, 8); // 2000 hz PWM, 8-bit resolution
+  ledcSetup(LEFT_MOTOR_CHANNEL_FWD, MOTOR_PWM_FREQ, MOTOR_PWM_RESOLUTION);
+  ledcSetup(LEFT_MOTOR_CHANNEL_REV, MOTOR_PWM_FREQ, MOTOR_PWM_RESOLUTION);
+  ledcSetup(RIGHT_MOTOR_CHANNEL_FWD, MOTOR_PWM_FREQ, MOTOR_PWM_RESOLUTION);
+  ledcSetup(RIGHT_MOTOR_CHANNEL_REV, MOTOR_PWM_FREQ, MOTOR_PWM_RESOLUTION);
+
   ledcAttachPin(MotPin0, 3);
   ledcAttachPin(MotPin1, 4);
   ledcAttachPin(MotPin2, 5);
